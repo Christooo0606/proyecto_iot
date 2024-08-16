@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro de Empleados</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    h1 {
+      background-color: #333;
+      color: #fff;
+      padding: 20px;
+      margin: 0;
+    }
+    .container {
+      padding: 20px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input {
+      padding: 10px;
+      width: 100%;
+      max-width: 400px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #333;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #555;
+    }
+  </style>
+</head>
+<body>
+  <h1>Registro de Empleados</h1>
+  <div class="container">
+    <form id="registerForm">
+      <div class="form-group">
+        <label for="uid">UID de la tarjeta:</label>
+        <input type="text" id="uid" name="uid" required>
+      </div>
+      <div class="form-group">
+        <label for="name">Nombre:</label>
+        <input type="text" id="name" name="name" required>
+      </div>
+      <div class="form-group">
+        <label for="lastName">Apellido:</label>
+        <input type="text" id="lastName" name="lastName" required>
+      </div>
+      <div class="form-group">
+        <label for="role">Rol:</label>
+        <input type="text" id="role" name="role" required>
+      </div>
+      <div class="form-group">
+        <label for="area">Área de trabajo:</label>
+        <input type="text" id="area" name="area" required>
+      </div>
+      <button type="submit">Registrar</button>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById('registerForm').addEventListener('submit', async function(event) {
+      event.preventDefault();
+      const uid = document.getElementById('uid').value;
+      const name = document.getElementById('name').value;
+      const lastName = document.getElementById('lastName').value;
+      const role = document.getElementById('role').value;
+      const area = document.getElementById('area').value;
+
+      try {
+        const response = await fetch('/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: new URLSearchParams({
+            uid: uid,
+            name: name,
+            lastName: lastName,
+            role: role,
+            area: area
+          })
+        });
+        const result = await response.text();
+        alert(result);
+      } catch (error) {
+        alert('Error al registrar datos');
+      }
+    });
+  </script>
+</body>
+</html>
