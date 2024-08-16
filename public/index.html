@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Registro de Empleados</title>
+  <title>Registro de Empleados Cineteca</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -13,10 +13,41 @@
       text-align: center;
     }
     h1 {
-      background-color: #333;
+      background-color: #004080; /* Azul oscuro */
       color: #fff;
       padding: 20px;
       margin: 0;
+    }
+    .navbar {
+      background-color: #003366; /* Azul medianoche */
+      color: #fff;
+      padding: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative; /* Añadido para mantener el encabezado libre */
+    }
+    .navbar a {
+      color: #fff;
+      text-decoration: none;
+      padding: 10px 20px;
+      font-weight: bold;
+    }
+    .navbar a:hover {
+      background-color: #004080; /* Azul oscuro */
+      border-radius: 4px;
+    }
+    .navbar button {
+      background-color: #003366; /* Azul medianoche */
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .navbar button:hover {
+      background-color: #004080; /* Azul oscuro */
     }
     .container {
       padding: 20px;
@@ -29,7 +60,7 @@
       margin-bottom: 5px;
       font-weight: bold;
     }
-    input {
+    input, select {
       padding: 10px;
       width: 100%;
       max-width: 400px;
@@ -38,20 +69,59 @@
     }
     button {
       padding: 10px 20px;
-      background-color: #333;
+      background-color: #003366; /* Azul medianoche */
       color: #fff;
       border: none;
       border-radius: 4px;
       cursor: pointer;
     }
     button:hover {
-      background-color: #555;
+      background-color: #004080; /* Azul oscuro */
+    }
+    footer {
+      background-color: #003366; /* Azul medianoche */
+      color: #fff;
+      padding: 10px;
+      position: fixed;
+      width: 100%;
+      bottom: 0;
+      text-align: center;
+    }
+    .clock {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #000;
+      font-size: 2em; /* Tamaño del reloj */
+      z-index: 1;
+      background: none; /* Sin fondo */
+    }
+    .hidden {
+      display: none;
+    }
+    .greeting {
+      font-size: 1.5em;
+      margin-bottom: 10px;
+    }
+    @media (max-width: 600px) {
+      .navbar a, .navbar button {
+        display: block;
+        padding: 10px;
+      }
     }
   </style>
 </head>
 <body>
-  <h1>Registro de Empleados</h1>
-  <div class="container">
+  <header>
+    <div class="navbar">
+      <a href="/" onclick="showClock(event)">Inicio</a>
+      <a href="tabla.html" onclick="hideClock()">Registros</a>
+      <button onclick="toggleView()">Formulario</button>
+    </div>
+    <h1>Registro de Empleados Cineteca</h1>
+  </header>
+  <div class="container hidden" id="formContainer">
     <form id="registerForm">
       <div class="form-group">
         <label for="uid">UID de la tarjeta:</label>
@@ -67,45 +137,99 @@
       </div>
       <div class="form-group">
         <label for="role">Rol:</label>
-        <input type="text" id="role" name="role" required>
+        <select id="role" name="role" required>
+          <option value="">Selecciona un rol</option>
+          <option value="Proyeccionista">Proyeccionista</option>
+          <option value="Cajero">Cajero</option>
+          <option value="Encargado de Sala">Encargado de Sala</option>
+          <option value="Vendedor de Confitería">Vendedor de Confitería</option>
+          <option value="Personal de Limpieza">Personal de Limpieza</option>
+          <option value="Gerente de Operaciones">Gerente de Operaciones</option>
+          <option value="Asistente de Ventas">Asistente de Ventas</option>
+          <option value="Seguridad">Seguridad</option>
+          <option value="Recepcionista">Recepcionista</option>
+        </select>
       </div>
       <div class="form-group">
         <label for="area">Área de trabajo:</label>
-        <input type="text" id="area" name="area" required>
+        <select id="area" name="area" required>
+          <option value="">Selecciona un área</option>
+          <option value="Sala 1">Sala 1</option>
+          <option value="Sala 2">Sala 2</option>
+          <option value="Sala 3">Sala 3</option>
+          <option value="Sala 4">Sala 4</option>
+          <option value="Sala 5">Sala 5</option>
+          <option value="Sala 6">Sala 6</option>
+          <option value="Sala 7">Sala 7</option>
+          <option value="Cineforo">Cineforo</option>
+          <option value="Comedor">Comedor</option>
+          <option value="Otro">Otro</option>
+        </select>
       </div>
       <button type="submit">Registrar</button>
     </form>
   </div>
 
-  <script>
-    document.getElementById('registerForm').addEventListener('submit', async function(event) {
-      event.preventDefault();
-      const uid = document.getElementById('uid').value;
-      const name = document.getElementById('name').value;
-      const lastName = document.getElementById('lastName').value;
-      const role = document.getElementById('role').value;
-      const area = document.getElementById('area').value;
+  <div class="clock hidden" id="clock">
+    <div class="greeting" id="greeting"></div>
+    <div id="clockDisplay"></div>
+  </div>
 
-      try {
-        const response = await fetch('/register', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          },
-          body: new URLSearchParams({
-            uid: uid,
-            name: name,
-            lastName: lastName,
-            role: role,
-            area: area
-          })
-        });
-        const result = await response.text();
-        alert(result);
-      } catch (error) {
-        alert('Error al registrar datos');
+  <footer>
+    Desarrollado por Findev
+  </footer>
+
+  <script>
+    function toggleView() {
+      const formContainer = document.getElementById('formContainer');
+      const clock = document.getElementById('clock');
+      const button = document.querySelector('.navbar button');
+      
+      if (formContainer.classList.contains('hidden')) {
+        formContainer.classList.remove('hidden');
+        clock.classList.add('hidden');
+        button.textContent = 'Mostrar Reloj';
+      } else {
+        formContainer.classList.add('hidden');
+        clock.classList.remove('hidden');
+        button.textContent = 'Mostrar Formulario';
       }
-    });
+    }
+
+    function showClock(event) {
+      event.preventDefault(); // Prevent default link behavior
+      document.getElementById('formContainer').classList.add('hidden');
+      document.getElementById('clock').classList.remove('hidden');
+      updateClock();
+    }
+
+    function hideClock() {
+      document.getElementById('clock').classList.add('hidden');
+    }
+
+    function updateClock() {
+      const now = new Date();
+      const hours = now.getHours();
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      const greeting = document.getElementById('greeting');
+      const clockDisplay = document.getElementById('clockDisplay');
+      
+      // Set greeting based on time
+      if (hours < 12) {
+        greeting.textContent = 'Buenos días';
+      } else if (hours < 18) {
+        greeting.textContent = 'Buenas tardes';
+      } else {
+        greeting.textContent = 'Buenas noches';
+      }
+      
+      // Update clock display
+      clockDisplay.textContent = `${String(hours).padStart(2, '0')}:${minutes}:${seconds}`;
+    }
+
+    setInterval(updateClock, 1000);
+    updateClock(); // Initialize clock display
   </script>
 </body>
 </html>

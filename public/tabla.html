@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registros de Empleados</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        header {
+            background-color: #004080; /* Azul oscuro */
+            color: white;
+            padding: 10px 0;
+            text-align: center;
+        }
+        nav {
+            display: flex;
+            justify-content: center;
+            margin: 10px 0;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            background-color: #003366; /* Azul medianoche */
+            margin: 0 5px;
+            border-radius: 5px;
+        }
+        nav a:hover {
+            background-color: #004080; /* Azul oscuro */
+        }
+        .container {
+            padding: 20px;
+            flex: 1;
+        }
+        .filter-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+        .filter-bar input, .filter-bar select, .filter-bar button {
+            padding: 10px;
+            margin-right: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        footer {
+            background-color: #003366; /* Azul medianoche */
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+            position: relative;
+            bottom: 0;
+            width: 100%;
+        }
+        @media (max-width: 600px) {
+            nav a {
+                display: block;
+                margin: 5px 0;
+            }
+        }
+    </style>
+    <!-- Añadir SheetJS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Registros de Empleados</h1>
+    </header>
+    <nav>
+        <a href="/">Inicio</a>
+        <!-- El botón de Registro ha sido eliminado -->
+    </nav>
+    <div class="container">
+        <div class="filter-bar">
+            <input type="text" id="filter" placeholder="Buscar por nombre, apellido, rol o área...">
+            <input type="date" id="startDate">
+            <input type="date" id="endDate">
+            <button onclick="filterByDate()">Filtrar por Fechas</button>
+            <button onclick="downloadExcel()">Descargar Excel</button>
+        </div>
+        <table id="employeeTable">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Apellido</th>
+                    <th>Rol</th>
+                    <th>Área</th>
+                    <th>Fecha</th>
+                    <th>Hora de Entrada</th>
+                    <th>Hora de Salida</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Los datos se llenarán aquí -->
+            </tbody>
+        </table>
+    </div>
+    <footer>
+        Desarrollado por Findev
+    </footer>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            fetch('/api/empleados')
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.querySelector('#employeeTable tbody');
+                    data.forEach(emp => {
+                        const entryDate = emp.entryTime ? new Date(emp.entryTime).toLocaleDateString() : 'N/A';
+                        const entryTime = emp.entryTime ? new Date(emp.entryTime).toLocaleTimeString() : 'N/A';
+                        const exitTime = emp.exitTime ? new Date(emp.exitTime).toLocaleTimeString() : 'N/A';
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${emp.name}</td>
+                            <td>${emp.lastName}</td>
+                            <td>${emp.role}</td>
+                            <td>${emp.area}</td>
+                            <td>${entryDate}</td>
+                            <td>${entryTime}</td>
+                            <td>${exitTime}</td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+
+                    // Filtrado por nombre, apellido, rol o área
+                    document.querySelector('#filter').addEventListener('input', (event) => {
+                        const filter = event.target.value.toLowerCase();
+                        const rows = tableBody.querySelectorAll('tr');
+                        rows.forEach(row => {
+                            const cells = row.querySelectorAll('td');
+                            const textContent = Array.from(cells).map(cell => cell.textContent.toLowerCase()).join(' ');
+                            row.style.display = textContent.includes(filter) ? '' : 'none';
+                        });
+                    });
+                })
+                .catch(error => console.error('Error al cargar empleados:', error));
+        });
+
+        function filterByDate() {
+            const startDate = document.querySelector('#startDate').value;
+            const endDate = document.querySelector('#endDate').value;
+            const tableBody = document.querySelector('#employeeTable tbody');
+            const rows = tableBody.querySelectorAll('tr');
+            rows.forEach(row => {
+                const dateCell = row.querySelector('td:nth-child(5)');
+                const rowDate = new Date(dateCell.textContent).toISOString().split('T')[0];
+                const isInRange = (!startDate || rowDate >= startDate) && (!endDate || rowDate <= endDate);
+                row.style.display = isInRange ? '' : 'none';
+            });
+        }
+
+        function downloadExcel() {
+            const table = document.querySelector('#employeeTable');
+            const workbook = XLSX.utils.table_to_book(table, { sheet: "Registros de Empleados" });
+            XLSX.writeFile(workbook, 'registros_empleados.xlsx');
+        }
+    </script>
+</body>
+</html>
